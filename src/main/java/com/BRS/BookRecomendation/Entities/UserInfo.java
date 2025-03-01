@@ -2,7 +2,6 @@ package com.BRS.BookRecomendation.Entities;
 
 import lombok.*;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -22,5 +21,3 @@ public class UserInfo {
     private String password;
     private String roles;
 }
-
-

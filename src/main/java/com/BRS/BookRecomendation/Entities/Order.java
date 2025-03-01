@@ -1,5 +1,6 @@
 package com.BRS.BookRecomendation.Entities;
 
+import com.BRS.BookRecomendation.DTO.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,17 +20,18 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId; // Foreign key reference to UserInfo
-    private String username;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserInfo user;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
     private Double totalPrice;
-    private String status; // "Pending", "Shipped", "Delivered"
-    
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
-

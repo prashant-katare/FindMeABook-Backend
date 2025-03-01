@@ -16,8 +16,9 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private UserInfo user;
 
     private String street;
     private String city;
@@ -26,4 +27,3 @@ public class Address {
     private String zipCode;
     private String phoneNumber;
 }
-

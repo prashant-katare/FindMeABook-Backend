@@ -1,6 +1,5 @@
 package com.BRS.BookRecomendation.Entities;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,5 +31,8 @@ public class Book {
     private double rating;
     private int stockQuantity;
 
-    private Long genreId;
+    @ManyToOne
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
+
 }
