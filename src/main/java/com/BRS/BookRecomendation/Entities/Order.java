@@ -3,6 +3,7 @@ package com.BRS.BookRecomendation.Entities;
 import com.BRS.BookRecomendation.DTO.Status;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +26,10 @@ public class Order {
     private UserInfo user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference  // Prevents infinite recursion
     private List<OrderItem> orderItems;
+    
+    private String username;
 
     private Double totalPrice;
 

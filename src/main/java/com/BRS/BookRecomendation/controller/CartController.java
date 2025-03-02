@@ -1,6 +1,7 @@
 package com.BRS.BookRecomendation.controller;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -115,7 +116,7 @@ public class CartController {
             }
 
             logger.info("Book ID: {} successfully added to cart for user ID: {}", bookId, userId);
-            return ResponseEntity.ok("Item added to cart");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Item added to cart"));
         } catch (RuntimeException e) {
             logger.error("Error adding book ID: {} to cart for user ID: {}: {}", bookId, userId, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -156,7 +157,7 @@ public class CartController {
             cartService.updateCartQuantity(userId, bookId, quantity);
 
             logger.info("Cart item successfully updated for User ID: {}, Book ID: {}", userId, bookId);
-            return ResponseEntity.ok("Cart updated");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Cart updated"));
         } catch (Exception e) {
             logger.error("Error updating cart item for User ID: {}, Book ID: {}: {}", userId, bookId, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -182,7 +183,7 @@ public class CartController {
             cartService.removeFromCart(userId, bookId);
 
             logger.info("Book ID: {} successfully removed from User ID: {}'s cart", bookId, userId);
-            return ResponseEntity.ok("Item removed from cart");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Item removed from cart"));
         } catch (Exception e) {
             logger.error("Error removing Book ID: {} from User ID: {}'s cart: {}", bookId, userId, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -205,7 +206,7 @@ public class CartController {
             cartService.clearCart(userId);
 
             logger.info("Cart successfully cleared for User ID: {}", userId);
-            return ResponseEntity.ok("Cart cleared");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Cart cleared"));
         } catch (Exception e) {
             logger.error("Error clearing cart for User ID: {}: {}", userId, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

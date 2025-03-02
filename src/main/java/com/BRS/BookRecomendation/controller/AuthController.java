@@ -64,8 +64,16 @@ public class AuthController {
             userInfo.setPassword(signUpData.getPassword());
             userInfo.setRoles(Roles.ROLE_USER.toString());
 
+            
+            logger.debug("User Info before saving: FullName={}, Email={}", userInfo.getFullName(), userInfo.getUsername());
+
             // Save user first
-            userInfoService.addUser(userInfo);
+            userInfo = userInfoService.addUser(userInfo);
+
+            // Retrieve user again to ensure it's persisted
+            userInfo = userInfoService.getUserById(userInfo.getId());
+            
+            
             logger.info("New user registered successfully: {}", signUpData.getEmail());
 
             // Create and save default address

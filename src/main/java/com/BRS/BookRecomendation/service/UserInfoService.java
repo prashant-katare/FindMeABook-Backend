@@ -51,13 +51,13 @@ public class UserInfoService implements UserDetailsService {
         });
     }
 
-    public String addUser(UserInfo userInfo) {
+    public UserInfo addUser(UserInfo userInfo) {
         logger.info("Adding new user with username: {}", userInfo.getUsername());
         // Encode password before saving the user
         userInfo.setPassword(encoder.encode(userInfo.getPassword()));
         userInfoRepository.save(userInfo);
         logger.info("User successfully added: {}", userInfo.getUsername());
-        return "User Added Successfully";
+        return userInfo;
     }
 
     public boolean existsByUsername(String username) {

@@ -1,7 +1,9 @@
 package com.BRS.BookRecomendation.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import com.BRS.BookRecomendation.Entities.OrderItem;
 import com.BRS.BookRecomendation.Entities.UserInfo;
 import com.BRS.BookRecomendation.repository.BookRepository;
 import com.BRS.BookRecomendation.repository.CartRepository;
+import com.BRS.BookRecomendation.repository.OrderItemRepository;
 import com.BRS.BookRecomendation.repository.OrderRepository;
 import com.BRS.BookRecomendation.DTO.Status;
 
@@ -40,10 +43,14 @@ public class OrderService {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
     @Transactional
     public Order placeOrder(Long userId) {
         logger.info("Placing order for user: {}", userId);
 
+        // Fetch User
         UserInfo user = userInfoService.getUserById(userId);
         if (user == null) {
             logger.error("User not found for user ID: {}", userId);
@@ -51,6 +58,7 @@ public class OrderService {
         }
         logger.debug("Found user with ID: {}", user.getId());
 
+        // Fetch Cart Items
         List<Cart> cartItems = cartService.getUserCart(userId);
         if (cartItems.isEmpty()) {
             logger.error("Cart is empty for user ID: {}", userId);
@@ -58,7 +66,7 @@ public class OrderService {
         }
         logger.debug("Found {} items in cart for user: {}", cartItems.size(), userId);
 
-        // Check stock availability for all items
+        // Check stock availability for all items BEFORE modifying anything
         for (Cart item : cartItems) {
             Book book = item.getBook();
             if (book.getStockQuantity() < item.getQuantity()) {
@@ -71,35 +79,51 @@ public class OrderService {
         }
         logger.debug("Stock availability check passed for all items");
 
-        // Create order items
-        List<OrderItem> orderItems = cartItems.stream()
-                .map(item -> OrderItem.builder()
-                        .book(item.getBook())
-                        .quantity(item.getQuantity())
-                        .price(item.getBook().getPrice())
-                        .imageUrl(item.getBook().getImageUrl())
-                        .build())
-                .collect(Collectors.toList());
-        logger.debug("Created {} order items", orderItems.size());
+        // Create Order
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(Status.CONFIRMED);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setUsername(user.getUsername());
+        
+        List<OrderItem> orderItems = new ArrayList<>();
+        
+        for(Cart cart : cartItems) {     	
+        	OrderItem item = new OrderItem();
+        	Book book = bookRepository.getBookById(cart.getBook().getId());
+        	
+        	item.setBook(book);
+        	item.setQuantity(cart.getQuantity());
+        	item.setPrice(book.getPrice());
+        	item.setImageUrl(book.getImageUrl());
+        	item.setBookTitle(book.getTitle());
+        	item.setOrder(order); 
+        	
+        	orderItems.add(item);
+        }
+        
 
-        // Calculate total price
+//        // Create Order Items
+//        List<OrderItem> orderItems = cartItems.stream()
+//                .map(item -> {
+//                    OrderItem orderItem = new OrderItem();
+//                    orderItem.setBook(item.getBook());
+//                    orderItem.setQuantity(item.getQuantity());
+//                    orderItem.setPrice(item.getBook().getPrice());
+//                    orderItem.setImageUrl(item.getBook().getImageUrl());
+//                    orderItem.setOrder(order); // ✅ Associate orderItem with the order
+//                    return orderItem;
+//                })
+//                .collect(Collectors.toList());
+
+        order.setOrderItems(orderItems);
+
+        // Calculate Total Price
         double totalPrice = orderItems.stream().mapToDouble(i -> i.getPrice() * i.getQuantity()).sum();
+        order.setTotalPrice(totalPrice);
         logger.debug("Order total price: ${}", totalPrice);
 
-        // Create the order
-        Order order = Order.builder()
-                .user(user)
-                .orderItems(orderItems)
-                .totalPrice(totalPrice)
-                .status(Status.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        // Save the order
-        Order savedOrder = orderRepository.save(order);
-        logger.info("Order created successfully with ID: {}", savedOrder.getId());
-
-        // Update stock quantities
+        // Update stock quantities **before saving order**
         for (Cart item : cartItems) {
             Book book = item.getBook();
             int newStock = book.getStockQuantity() - item.getQuantity();
@@ -109,7 +133,11 @@ public class OrderService {
         }
         logger.debug("Stock quantities updated for all books");
 
-        // Clear the cart
+        // Save the Order (including its items)
+        Order savedOrder = orderRepository.save(order);
+        logger.info("Order created successfully with ID: {}", savedOrder.getId());
+
+        // Clear the Cart
         cartRepository.deleteAll(cartItems);
         logger.debug("Cart cleared for user: {}", userId);
 

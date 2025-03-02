@@ -1,5 +1,6 @@
 package com.BRS.BookRecomendation.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -9,11 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.BRS.BookRecomendation.DTO.OrderDTO;
 import com.BRS.BookRecomendation.Entities.Order;
+import com.BRS.BookRecomendation.Entities.OrderItem;
 import com.BRS.BookRecomendation.service.OrderService;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/order")
 public class OrderController {
 
     private final Logger logger = LoggerFactory.getLogger(OrderController.class);
@@ -35,18 +38,33 @@ public class OrderController {
         }
     }
 
+    
     @GetMapping("/{userId}/getUserOrders")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
-        logger.info("Request to get orders for User ID: {}", userId);
-        try {
-            List<Order> orders = orderService.getOrdersByUserId(userId);
-            logger.info("Retrieved {} orders for User ID: {}", orders.size(), userId);
-            return ResponseEntity.ok(orders);
-        } catch (Exception e) {
-            logger.error("Error retrieving orders for User ID: {}: {}", userId, e.getMessage());
-            throw e;
-        }
+        logger.info("Fetching orders for User ID: {}", userId);
+        List<Order> orders = orderService.getOrdersByUserId(userId);
+        logger.info("Retrieved {} orders for User ID: {}", orders.size(), userId);
+        
+//        List<OrderDTO> orderDTOs = new ArrayList<OrderDTO>();
+//        
+//        OrderDTO temoOrderDTO;
+//        
+//        for(Order tempOrder:orders) {
+//        	
+//        	temoOrderDTO = new OrderDTO();
+//        	
+//        	temoOrderDTO.setId(tempOrder.getId());
+//        	temoOrderDTO.setTotalPrice(tempOrder.getTotalPrice());
+//        	temoOrderDTO.setStatus(tempOrder.getStatus().toString());
+//        	temoOrderDTO.setCreatedAt(tempOrder.getCreatedAt());
+//        	temoOrderDTO.setOrderItems(tempOrder.getOrderItems());
+//        	
+//        	orderDTOs.add(temoOrderDTO);
+//        }
+//        
+//        return ResponseEntity.ok(orderDTOs);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{userId}/orderDetails/{orderId}")

@@ -1,5 +1,6 @@
 package com.BRS.BookRecomendation.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,7 +89,7 @@ public class WishlistController {
             wishlistService.addToWishlist(userId, bookId);
 
             logger.info("Book ID: {} successfully added to wishlist for User ID: {}", bookId, userId);
-            return ResponseEntity.ok("Item added to wishlist");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Item added to wishlist"));
         } catch (Exception e) {
             logger.error("Error adding Book ID: {} to wishlist for User ID: {}: {}", bookId, userId, e.getMessage());
             return ResponseEntity.badRequest().body("Failed to add to wishlist: " + e.getMessage());
@@ -114,7 +115,7 @@ public class WishlistController {
             wishlistService.removeFromWishlist(userId, bookId);
 
             logger.info("Book ID: {} successfully removed from wishlist for User ID: {}", bookId, userId);
-            return ResponseEntity.ok("Item removed from wishlist");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Item removed to wishlist"));
         } catch (Exception e) {
             logger.error("Error removing Book ID: {} from wishlist for User ID: {}: {}", bookId, userId,
                     e.getMessage());
@@ -144,7 +145,7 @@ public class WishlistController {
                 logger.debug("Removing Book ID: {} from wishlist for User ID: {}", bookId, userId);
                 wishlistService.removeFromWishlist(userId, bookId);
                 logger.info("Book ID: {} successfully moved from wishlist to cart for User ID: {}", bookId, userId);
-                return ResponseEntity.ok("Item moved to cart");
+                return ResponseEntity.ok(Collections.singletonMap("message", "Item moved to cart"));
             } else {
                 logger.warn("Failed to add Book ID: {} to cart for User ID: {}", bookId, userId);
                 return addToCartResponse;

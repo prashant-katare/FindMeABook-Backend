@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.BRS.BookRecomendation.DTO.PasswordUpdateDTO;
 import com.BRS.BookRecomendation.Entities.Book;
 import com.BRS.BookRecomendation.Entities.Genre;
 import com.BRS.BookRecomendation.Entities.Order;
@@ -48,6 +49,26 @@ public class AdminController {
 
     @Autowired
     private AddressService addressService;
+    
+    
+    @PutMapping("{userId}/updatePassword")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public ResponseEntity<?> updatePassword(@PathVariable Long userId, @RequestBody PasswordUpdateDTO passwordDTO) {
+        logger.info("Request to update password for User ID: {}", userId);
+        try {
+            if (!userInfoService.updatePassword(userId, passwordDTO.getCurrentPassword(),
+                    passwordDTO.getNewPassword())) {
+                logger.warn("Password update failed for User ID: {} - Current password is incorrect", userId);
+                return ResponseEntity.badRequest().body("Current password is incorrect");
+            }
+
+            logger.info("Password successfully updated for User ID: {}", userId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error updating password for User ID: {}: {}", userId, e.getMessage());
+            return ResponseEntity.badRequest().body("Password update failed: " + e.getMessage());
+        }
+    }
 
     // Book Management
     @PostMapping("/books")

@@ -3,6 +3,7 @@ package com.BRS.BookRecomendation.security;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.BRS.BookRecomendation.Entities.UserInfo;
+import com.BRS.BookRecomendation.repository.UserInfoRepository;
+
 @Component
 public class JwtHelper {
 
@@ -22,6 +28,9 @@ public class JwtHelper {
 
     //    public static final long JWT_TOKEN_VALIDITY =  60;
     private String secret = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
+    
+    @Autowired
+    UserInfoRepository userInfoRepository;
 
     //retrieve username from jwt token
     public String getUsernameFromToken(String token) {
@@ -53,7 +62,12 @@ public class JwtHelper {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         
-        claims.put("username", userDetails.getUsername());
+        Long userId = userInfoRepository.findIdByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User ID not found"));
+
+        
+        //claims.put("username", userDetails.getUsername());
+        claims.put("userId", userId);
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));

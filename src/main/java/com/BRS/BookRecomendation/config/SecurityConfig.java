@@ -44,10 +44,22 @@ public class SecurityConfig {
                 })
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/signup", "/book/allBooks").permitAll()
-                        .requestMatchers("/book/hello", "/book/user/**", "/auth/user/**").hasAuthority("ROLE_USER")
-                        .anyRequest().authenticated() // Protect all other endpoints
-                )
+                        // Public endpoints
+                        .requestMatchers("/auth/login", "/auth/signup", "/book/**")
+                        .permitAll()
+
+                        // Admin-only endpoints
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/order/admin/**").hasAuthority("ROLE_ADMIN")
+
+                        // User endpoints
+                        .requestMatchers("/profile/**").hasAuthority("ROLE_USER")
+                        .requestMatchers("/wishlist/**").hasAuthority("ROLE_USER")
+                        .requestMatchers("/cart/**").hasAuthority("ROLE_USER")
+                        .requestMatchers("/order/**").hasAuthority("ROLE_USER")
+
+                        // Protect all other endpoints
+                        .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions
                 )
